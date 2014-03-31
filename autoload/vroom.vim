@@ -9,10 +9,6 @@ if !exists("g:vroom_spec_command")
   let g:vroom_spec_command = 'rspec '
 endif
 
-if !exists("g:vroom_use_colors")
-  let g:vroom_use_colors = !has('gui_running')
-endif
-
 if !exists("g:vroom_clear_screen")
   let g:vroom_clear_screen = 1
 endif
@@ -146,7 +142,6 @@ endfunction
 " filename - a filename.
 " args     - options for running the tests:
 "            'runner': the test runner to use (e.g., 'm')
-"            'options': any additional options (e.g., '--drb')
 "            'line_number': the line number of the test to run (e.g., ':4')
 function s:RunTests(filename, args)
   call s:PrepareToRunTests(a:filename)
@@ -161,28 +156,22 @@ endfunction
 " Internal: Get the right test runner for the file.
 function s:DetermineRunner(filename)
   if match(a:filename, '_spec.rb') != -1
-    return s:test_runner_prefix . g:vroom_spec_command . s:color_flag
+    return s:test_runner_prefix . g:vroom_spec_command
   elseif match(a:filename, '\.feature') != -1
-    return s:test_runner_prefix . g:vroom_cucumber_path . s:color_flag
+    return s:test_runner_prefix . g:vroom_cucumber_path
   elseif match(a:filename, "_test.rb") != -1
     return s:test_runner_prefix . g:vroom_test_unit_command
   end
 endfunction
 
 " Internal: Perform all the steps we need to perform before actually running
-" the tests: clear the screen, write the files, set the test_runner_prefix,
-" set the color_flag.
+" the tests: clear the screen, write the files, set the test_runner_prefix
 function s:PrepareToRunTests(filename)
   if g:vroom_clear_screen
     call s:ClearScreen()
   endif
   call s:WriteOrWriteAll()
   call s:SetTestRunnerPrefix(a:filename)
-  if s:usingZeus()
-    let s:color_flag = ""
-  else
-    call s:SetColorFlag()
-  endif
 endfunction
 
 " Internal: Runs a command though vim or vmux
@@ -336,24 +325,6 @@ endfunction
 " Internal: Sets t:vroom_nearest_test to current line
 function s:SetNearestTest()
   let t:vroom_nearest_test = line('.')
-endfunction
-
-" Internal: Sets s:color_flag to the correct color flag as configured
-function s:SetColorFlag()
-  if g:vroom_rspec_version == "2.x"
-    if g:vroom_use_colors
-      let s:color_flag = " --color"
-    else
-      let s:color_flag = " --no-color"
-    endif
-  else
-    if g:vroom_use_colors
-      let s:color_flag = " --color"
-    else
-      let s:color_flag = ""
-    endif
-  endif
-
 endfunction
 
 " }}}
